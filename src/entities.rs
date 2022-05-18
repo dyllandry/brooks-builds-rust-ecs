@@ -15,6 +15,7 @@ use crate::custom_errors::CustomErrors;
 pub struct Entities {
     components: HashMap<TypeId, Vec<Option<Rc<RefCell<dyn Any>>>>>,
     bit_masks: HashMap<TypeId, u32>,
+    map: Vec<u32>,
 }
 
 impl Entities {
@@ -29,6 +30,7 @@ impl Entities {
         self.components
             .iter_mut()
             .for_each(|(_type_id, components)| components.push(None));
+        self.map.push(0);
         self
     }
 
@@ -39,6 +41,9 @@ impl Entities {
                 .last_mut()
                 .ok_or_else(|| CustomErrors::CreateComponentNeverCalled)?;
             *last_component = Some(Rc::new(RefCell::new(data)));
+            let map_index = self.map.len() - 1;
+            let bit_mask = self.bit_masks.get(&type_id).unwrap();
+            self.map[map_index] |= bit_mask;
         } else {
             return Err(CustomErrors::ComponentNotRegistered.into());
         }
@@ -103,6 +108,24 @@ mod test {
         let borrowed_health = wrapped_health.borrow();
         let health = borrowed_health.downcast_ref::<Health>().unwrap();
         assert_eq!(health.0, 100);
+        Ok(())
+    }
+
+    #[test]
+    fn map_is_updated_when_creating_entities() -> Result<()> {
+        let mut entities = Entities::default();
+        entities.register_component::<Health>();
+        entities.register_component::<Speed>();
+        entities
+            .create_entity()
+            .with_component(Health(100))?
+            .with_component(Speed(15))?;
+        let entity_map = entities.map[0];
+        assert_eq!(entity_map, 3);
+
+        entities.create_entity().with_component(Speed(15))?;
+        let entity_map = entities.map[1];
+        assert_eq!(entity_map, 2);
         Ok(())
     }
 
