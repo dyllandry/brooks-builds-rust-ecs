@@ -49,6 +49,10 @@ impl Entities {
         }
         Ok(self)
     }
+
+    pub fn get_bit_mask(&self, type_id: &TypeId) -> Option<u32> {
+        self.bit_masks.get(type_id).copied()
+    }
 }
 
 #[cfg(test)]

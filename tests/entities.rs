@@ -38,8 +38,8 @@ fn query_for_entities() -> Result<()> {
 
     let query = world
         .query()
-        .with_component::<Location>()
-        .with_component::<Size>()
+        .with_component::<Location>()?
+        .with_component::<Size>()?
         .run();
 
     let locations: &Vec<Rc<RefCell<dyn Any>>> = &query[0];
