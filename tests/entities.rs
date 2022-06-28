@@ -42,8 +42,8 @@ fn query_for_entities() -> Result<()> {
         .with_component::<Size>()?
         .run();
 
-    let locations: &Vec<Rc<RefCell<dyn Any>>> = &query[0];
-    let sizes: &Vec<Rc<RefCell<dyn Any>>> = &query[1];
+    let locations: &Vec<&Rc<RefCell<dyn Any>>> = &query[0];
+    let sizes: &Vec<&Rc<RefCell<dyn Any>>> = &query[1];
 
     assert_eq!(locations.len(), sizes.len());
     assert_eq!(locations.len(), 2);
